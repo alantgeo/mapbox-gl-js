@@ -33,6 +33,15 @@ class LngLat {
     }
 
     /**
+     * Returns a new `LngLat` object with the same coordinates as this one.
+     *
+     * @returns {LngLat} A copy.
+     */
+    copy() {
+        return new LngLat(this.lng, this.lat);
+    }
+
+    /**
      * Returns a new `LngLat` object whose longitude is wrapped to the range (-180, 180).
      *
      * @returns {LngLat} The wrapped `LngLat` object.

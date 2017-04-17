@@ -57,7 +57,7 @@ class Popup extends Evented {
         super();
         this.options = util.extend(Object.create(defaultOptions), options);
         util.bindAll([
-            '_update',
+            '_onMove',
             '_onClickClose'],
             this);
     }
@@ -70,11 +70,11 @@ class Popup extends Evented {
      */
     addTo(map) {
         this._map = map;
-        this._map.on('move', this._update);
+        this._map.on('move', this._onMove);
         if (this.options.closeOnClick) {
             this._map.on('click', this._onClickClose);
         }
-        this._update();
+        this._update(false);
         return this;
     }
 
@@ -104,7 +104,7 @@ class Popup extends Evented {
         }
 
         if (this._map) {
-            this._map.off('move', this._update);
+            this._map.off('move', this._onMove);
             this._map.off('click', this._onClickClose);
             delete this._map;
         }
@@ -140,7 +140,7 @@ class Popup extends Evented {
      */
     setLngLat(lnglat) {
         this._lngLat = LngLat.convert(lnglat);
-        this._update();
+        this._update(false);
         return this;
     }
 
@@ -204,7 +204,7 @@ class Popup extends Evented {
     setDOMContent(htmlNode) {
         this._createContent();
         this._content.appendChild(htmlNode);
-        this._update();
+        this._update(false);
         return this;
     }
 
@@ -223,7 +223,11 @@ class Popup extends Evented {
         }
     }
 
-    _update() {
+    _onMove() {
+        this._update(true);
+    }
+
+    _update(wrap) {
         if (!this._map || !this._lngLat || !this._content) { return; }
 
         if (!this._container) {
@@ -232,9 +236,40 @@ class Popup extends Evented {
             this._container.appendChild(this._content);
         }
 
+        if (!this._wrappedLnLat) {
+            this._wrappedLnLat = this._lngLat.copy();
+        }
+
+        let pos = this._map.project(this._wrappedLnLat);
+
+        if (wrap && this._map.transform.renderWorldCopies) {
+            const delta = Math.abs(pos.x - this._pos.x);
+            const left  = this._map.project([this._wrappedLnLat.lng - 360, this._wrappedLnLat.lat]);
+            const right = this._map.project([this._wrappedLnLat.lng + 360, this._wrappedLnLat.lat]);
+
+            if (Math.abs(left.x - this._pos.x) < delta) {
+                this._wrappedLnLat.lng -= 360;
+                pos = left;
+            } else if (Math.abs(right.x - this._pos.x) < delta) {
+                this._wrappedLnLat.lng += 360;
+                pos = right;
+            }
+
+            while (pos.x < 0) {
+                this._wrappedLnLat.lng += 360;
+                pos = this._map.project(this._wrappedLnLat)
+            }
+
+            while (pos.x > this._map.transform.width) {
+                this._wrappedLnLat.lng -= 360;
+                pos = this._map.project(this._wrappedLnLat)
+            }
+        }
+
+        this._pos = pos;
+
         let anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
-        const pos = this._map.project(this._map.transform.renderWorldCopies ? this._lngLat.wrapToBestWorld(this._map.getCenter()) : this._lngLat).round();
 
         if (!anchor) {
             const width = this._container.offsetWidth,
@@ -261,7 +296,7 @@ class Popup extends Evented {
             }
         }
 
-        const offsetedPos = pos.add(offset[anchor]);
+        const offsetedPos = pos.add(offset[anchor]).round();
 
         const anchorTranslate = {
             'top': 'translate(-50%,0)',
