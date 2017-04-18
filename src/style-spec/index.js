@@ -8,6 +8,7 @@ exports.latest = require('./reference/latest');
 exports.format = require('./format');
 exports.migrate = require('./migrate');
 exports.composite = require('./composite');
+exports.merge = require('./merge');
 exports.diff = require('./diff');
 exports.ValidationError = require('./error/validation_error');
 exports.ParsingError = require('./error/parsing_error');

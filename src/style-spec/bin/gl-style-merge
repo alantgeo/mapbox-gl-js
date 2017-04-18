@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+'use strict';
+
+var fs = require('fs'),
+    argv = require('minimist')(process.argv.slice(2)),
+    format = require('../').format,
+    merge = require('../').merge;
+
+var styles = argv._.map(function (file) {
+    return JSON.parse(fs.readFileSync(file));
+});
+
+merge(styles, (errors, warnings, style) => {
+    if (errors) {
+        for (var error in errors) {
+            console.error('ERROR: ' + argv._[error.index] + ': ' + error.message);
+        }
+    }
+    if (warnings) {
+        for (var warning in warnings) {
+            console.error('WARNING: ' + argv._[warning.index] + ': ' + warning.message);
+        }
+    }
+    console.log(format(style));
+});
