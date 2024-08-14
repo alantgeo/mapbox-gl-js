@@ -29,7 +29,7 @@
     "potpack": "^2.0.0",
     "quickselect": "^2.0.0",
     "rw": "^1.3.3",
-    "supercluster": "^7.1.5",
+    "supercluster": "andrewharvey/supercluster#244",
     "tinyqueue": "^2.0.3",
     "vt-pbf": "^3.1.3"
   },
