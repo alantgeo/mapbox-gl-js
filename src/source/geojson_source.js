@@ -142,7 +142,7 @@ class GeoJSONSource extends Evented implements Source {
                 radius: (options.clusterRadius !== undefined ? options.clusterRadius : 50) * scale,
                 log: false,
                 generateId: options.generateId || false,
-                arrayType: Float64Array
+                arrayType: 'Float64Array'
             },
             clusterProperties: options.clusterProperties,
             filter: options.filter
