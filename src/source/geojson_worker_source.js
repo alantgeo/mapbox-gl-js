@@ -286,6 +286,11 @@ function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
         }
     };
 
+    const arrayTypes = {
+        Float32Array, Float64Array
+    };
+    superclusterOptions.arrayType = arrayTypes[superclusterOptions.arrayType];
+
     return superclusterOptions;
 }
 
